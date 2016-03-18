@@ -25,6 +25,30 @@ namespace Sphero_Squared
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        //Holds the number for the minimum pitch to move forward
+        public const float MIN_MOVE_PITCH = 15;
+
+        //Holds the number for the maximum pitch to move forward (treat anything above it as maximum)
+        public const float MAX_MOVE_PITCH = 60;
+
+        //Holds the number for the maximum speed the Sphero can go
+        public const float MAX_SPEED = 0.8f;
+
+        //Holds the number for the minimum roll to move sideways
+        public const float MIN_MOVE_ROLL = 8;
+
+        //Holds the number for the maximum roll to move sideways (treat anything above it as maximum)
+        public const float MAX_MOVE_ROLL = 50;
+
+        //Holds the number for the maximum amount of degrees the Sphero can turn from an action
+        public const int MAX_TURN = 45;
+
+        //Holds the direction for the follower
+        public int direction = 0;
+
+        //Holds the last speed the follower went
+        public float last_speed = 0f;
+
         //Holds the master SpheroController
         public SpheroController master;
         //Holds the follower SpheroController
@@ -32,21 +56,6 @@ namespace Sphero_Squared
 
         //Holds the list of Spheros that are paired with the computer
         private List<Robot> _robots = new List<Robot>();
-
-        //Holds the X, Y, and Z that are considered as the origin for the master Sphero
-        private float _defaultX = 0;
-        private float _defaultY = 0;
-        private float _defaultZ = 0;
-
-        //Holds the current X, Y, and Z values for the master Sphero
-        private float _currentX = 0;
-        private float _currentY = 0;
-        private float _currentZ = 0;
-
-        //Holds the X, Y, and Z values for how far the master Sphero is tilted away from the origin
-        private float _offsetX = 0;
-        private float _offsetY = 0;
-        private float _offsetZ = 0;
 
         //Constructor
         public MainPage()
@@ -202,22 +211,6 @@ namespace Sphero_Squared
             }
         }
 
-        //When the orientation slider for the master Sphero is changed
-        private void masterOrientationSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            //Update master's direction if master is not null
-            if(master != null)
-            master.direction = (int)masterOrientationSlider.Value;
-        }
-
-        //When the orientation slider for the follower Sphero is changed
-        private void followerOrientationSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            //Update follower's direction if follower is not null
-            if (follower != null)
-            follower.direction = (int)followerOrientationSlider.Value;
-        }
-
         //When the toggle for stabilizing master Sphero is toggled
         private void toggleStabilizeMaster_Toggled(object sender, RoutedEventArgs e)
         {
@@ -226,76 +219,90 @@ namespace Sphero_Squared
             master.setStabilization(toggleStabilizeMaster.IsOn);
         }
 
-        //Update the gyro position of master
-        public void updateGyroPosition(float x, float y, float z)
-        {
-            //Set the current X, Y, and Z
-            _currentX = x;
-            _currentY = y;
-            _currentZ = z;
-
-            //Update the labels with 4 digits and one decimal point after
-            textMasterGyroX.Text = _currentX.ToString("0000.0");
-            textMasterGyroY.Text = _currentY.ToString("0000.0");
-            textMasterGyroZ.Text = _currentZ.ToString("0000.0");
-
-            //Update the offset
-            updateOffset();
-
-        }
-
-        //Update the offset of master
-        public void updateOffset()
-        {
-            //Add the current X, Y, and Z to the offsets of X, Y, and Z
-            _offsetX += _currentX;
-            _offsetY += _currentY;
-            _offsetZ += _currentZ;
-
-            //Update the labels with 4 digits and one decimal point after
-            textMasterOffsetX.Text = _offsetX.ToString("0000.0");
-            textMasterOffsetY.Text = _offsetY.ToString("0000.0");
-            textMasterOffsetZ.Text = _offsetZ.ToString("0000.0");
-        }
-
-        //Set the "origin" for the master Sphero
-        public void setDefaultGyroPosition()
-        {
-            //Set the origin X, Y, and Z to the current X, Y, and Z
-            _defaultX = _currentX;
-            _defaultY = _currentY;
-            _defaultZ = _currentZ;
-
-            //Set the offset X, Y, and Z to 0
-            _offsetX = 0;
-            _offsetY = 0;
-            _offsetZ = 0;
-
-            //Update the labels with 4 digits and one decimal point after
-            textMasterGyroDefaultX.Text = _defaultX.ToString("0000.0");
-            textMasterGyroDefaultY.Text = _defaultY.ToString("0000.0");
-            textMasterGyroDefaultZ.Text = _defaultZ.ToString("0000.0");
-        }
-
-        //When the master's Reset Default Position button is clicked
-        private void buttonResetMasterPosition_Click(object sender, RoutedEventArgs e)
-        {
-            //Set the "origin" for the master Sphero
-            setDefaultGyroPosition();
-        }
-
         //When the ComboBox for selecting the master Sphero is changed
         private void comboMasterSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            //Make the panel with the controls for the master Sphero visible
             panelMaster.Visibility = Visibility.Visible;
+            //Update label above the master Sphero selector
             textComboMaster.Text = "Master Sphero Selected";
         }
 
         //When the ComboBox for selecting the follower Sphero is changed
         private void comboFollowerSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            //Make the panel with the controls for the follower Sphero visible
             panelFollower.Visibility = Visibility.Visible;
+            //Update label above the follower Sphero selector
             textComboFollower.Text = "Follower Sphero Selected";
+        }
+
+        //Handles when the Master sphero changes attitude (pitch and roll)
+        public void handleMasterAttitude(float pitch, float roll)
+        {
+            //Create the speed variable (0-1)
+            float speed = 0;
+
+            //If pitch is < 0, set pitch to -pitch and reverse the direction
+            if(pitch < 0)
+            {
+                pitch = -pitch;
+                direction += 180;
+            }
+
+            //If the pitch is more than the minumum
+            if(pitch > MIN_MOVE_PITCH)
+            {
+                //If the pitch is more than the maximum, set it to the maximum
+                if(pitch > MAX_MOVE_PITCH)
+                {
+                    pitch = MAX_MOVE_PITCH;
+                }
+
+                //Calculate the speed
+                speed = ((pitch - MIN_MOVE_PITCH) / (MAX_MOVE_PITCH - MIN_MOVE_PITCH) * MAX_SPEED); 
+            }
+
+            //If the absolute value of roll is more than the minimum
+            if(Math.Abs(roll) > MIN_MOVE_ROLL)
+            {
+                //If the absolute value of roll is more than the maximum, set it to the maximum (same sign as original value)
+                if(Math.Abs(roll) > MAX_MOVE_ROLL)
+                {
+                    roll = MAX_MOVE_ROLL * Math.Sign(roll);
+                }
+
+                //Calculate the roll
+                direction += Convert.ToInt16((roll - MIN_MOVE_ROLL) / (MAX_MOVE_ROLL - MIN_MOVE_ROLL) * MAX_TURN);
+            }
+
+            //The direction for the Roll has to be 0-359. Loop to make sure it is greater than 0
+            while (direction < 0)
+            {
+                direction += 360;
+            }
+
+            //The direction for the Roll has to be 0-359. Loop to make sure it is less than 359
+            while (direction > 359)
+            {
+                direction -= 360;
+            }
+
+            //If the follower Sphero is connected, roll it
+            if (follower != null && follower.isConnected)
+            {
+                //Don't do this if the last speed was 0 and this speed was 0. It spams the follower and the follower gets overloaded
+                if (!(last_speed == 0 && last_speed == speed))
+                {
+                    //Set last_speed to current speed
+                    last_speed = speed;
+
+                    Debug.WriteLine("Rolling follower: {Direction: " + direction + "; Speed: " + speed + "}");
+
+                    //Roll the follower
+                    follower.sphero.Roll(direction, speed);
+                }
+            }
         }
     }
 }

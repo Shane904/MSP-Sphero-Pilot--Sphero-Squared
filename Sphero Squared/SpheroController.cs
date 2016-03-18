@@ -11,6 +11,9 @@ namespace Sphero_Squared
 {
     public class SpheroController : EventArgs
     {
+        //The Hz of refreshing sensor data
+        public const int UPDATES_PER_SECOND = 2;
+
         //The Sphero Object
         private Sphero _sphero;
 
@@ -20,11 +23,18 @@ namespace Sphero_Squared
         //If this SpheroController is the Master or Follower
         private bool _isMaster;
 
-        //The last GyrometerReading receieved
-        private GyrometerReading _gyrometerReading;
+        //The last AccelerometerReading receieved
+        private AccelerometerReading _accelerometerReading;
 
         //If SpheroController is connected via Bluetooth to a Sphero
         private bool _isConnected = false;
+
+        //Roll (X)
+        private float _roll = 0;
+        //Pitch (Y)
+        private float _pitch = 0;
+
+        
 
         //Getter for _sphero
         public Sphero sphero
@@ -71,8 +81,10 @@ namespace Sphero_Squared
             _isMaster = isMaster;
 
             _mainPage = mainPage;
+
+            Debug.WriteLine("Created new " + (_isMaster ? "Master" : "Follower") + " SpheroController for: " + spheroToConnect.BluetoothName);
         }
-       
+
         //Attempt to connect to the Sphero.
         public void connectSphero()
         {
@@ -89,52 +101,75 @@ namespace Sphero_Squared
         //Triggers when ConnectedRobotEvent happens
         private void _onSpheroConnected(object sender, Robot connectedSphero)
         {
-            //Get the SharedProvider
-            RobotProvider provider = RobotProvider.GetSharedProvider();
-
-            //Remove event for when the Sphero connects
-            provider.ConnectedRobotEvent -= _onSpheroConnected;
-
-            //Set _sphero to the newly connected Sphero
-            _sphero = (Sphero)connectedSphero;
-
-            //Call the _mainPage's spheroConnected
-            _mainPage.spheroConnected(_isMaster, bluetoothName);
-
-            
-            //Turn on the Back LED so the user knows what the back of the Sphero is
-            _sphero.SetBackLED(1);
-            
-            //Turn off stabilization automatically if master. Allows for better experience while controlling
-            if (_isMaster)
+            Debug.WriteLine("About to connect to " + (_isMaster ? "Master" : "Follower") + " Sphero: " + connectedSphero.BluetoothName);
+            //Only set everything if it is the correct Sphero
+            if (connectedSphero.BluetoothName == sphero.BluetoothName)
             {
-                setStabilization(false);
+                //Get the SharedProvider
+                RobotProvider provider = RobotProvider.GetSharedProvider();
+
+                //Remove event for when the Sphero connects
+                provider.ConnectedRobotEvent -= _onSpheroConnected;
+
+                //Set _sphero to the newly connected Sphero
+                _sphero = (Sphero)connectedSphero;
+
+                //Call the _mainPage's spheroConnected
+                _mainPage.spheroConnected(_isMaster, bluetoothName);
+
+
+                //Turn on the Back LED so the user knows what the back of the Sphero is
+                _sphero.SetBackLED(1);
+
+                //Turn off stabilization automatically if master. Allows for better experience while controlling
+                if (_isMaster)
+                {
+                    setStabilization(false);
+                }
+                else
+                {
+                    setStabilization(true);
+                }
+
+                //Get 4 updates per second
+                _sphero.SensorControl.Hz = UPDATES_PER_SECOND;
+
+                //Add event for when _sphero reports the Accelerometer has updated if master
+                if (_isMaster)
+                {
+                    _sphero.SensorControl.AccelerometerUpdatedEvent += _sensorControl_AccelerometerUpdated;
+                }
+
+                Debug.WriteLine("Connected to " + (_isMaster ? "Master" : "Follower") + " Sphero: " + connectedSphero.BluetoothName);
+
+                //Set the _isConnected variable to true
+                _isConnected = true;
             }
-
-            //Get 4 updates per second
-            _sphero.SensorControl.Hz = 4;
-
-            //Add event for when _sphero reports the Gyrometer has updated
-            _sphero.SensorControl.GyrometerUpdatedEvent += _sensorControl_GyrometerUpdated;
-
-
-            Debug.WriteLine("Connected to " + (_isMaster ? "Master" : "Follower") + " Sphero: " + connectedSphero.BluetoothName);
-
-            //Set the _isConnected variable to true
-            _isConnected = true;
         }
 
-        //Triggers when _sphero reports the Gyrometer has updated
-        private void _sensorControl_GyrometerUpdated(object sender, GyrometerReading gyrometerReading)
+        //Triggers when _sphero reports the Accelerometer has updated
+        private void _sensorControl_AccelerometerUpdated(object sender, AccelerometerReading accelerometerReading)
         {
-            //Update the _gyrometerReading variable with the newest reading
-            _gyrometerReading = gyrometerReading;
+            //Update the _accelerometerReading variable with the newest reading
+            _accelerometerReading = accelerometerReading;
 
-            //Update the labels on the _mainPage if master
-            if (_isMaster)
-            {
-                _mainPage.updateGyroPosition(_gyrometerReading.X, _gyrometerReading.Y, _gyrometerReading.Z);
-            }
+            //Calculate the attitude
+            _calculateAttitude();
+        }
+
+        //Calculate the attitude (pitch, roll)
+        private void _calculateAttitude()
+        {            
+            //Calculate the pitch from the _accelerometerReading
+            _pitch = Convert.ToSingle(180 * Math.Atan(_accelerometerReading.Y / Math.Sqrt(_accelerometerReading.X * _accelerometerReading.X + _accelerometerReading.Z * _accelerometerReading.Z)) / Math.PI);
+
+            //Calculate the roll from the _accelerometerReading
+            _roll = Convert.ToSingle(180 * Math.Atan(_accelerometerReading.X / Math.Sqrt(_accelerometerReading.Y * _accelerometerReading.Y + _accelerometerReading.Z * _accelerometerReading.Z)) / Math.PI);
+
+            //If master Sphero, report the pitch and roll to the MainPage
+            _mainPage.handleMasterAttitude(_pitch, _roll);
+
+            Debug.WriteLine((_isMaster ? "Master" : "Follower") + "Sphero Attitude: {Pitch: " + _pitch + "; Roll: " + _roll + "}");
         }
 
         //Disconnect from the Sphero (if connected)
@@ -144,8 +179,18 @@ namespace Sphero_Squared
             if (_sphero != null && isConnected)
             {
                 Debug.WriteLine("Disconnecting from " + bluetoothName);
+
                 //Turn stabilization back on in the case it was turned off
                 setStabilization(true);
+
+                //Get the SharedProvider
+                RobotProvider provider = RobotProvider.GetSharedProvider();
+
+                //Remove event for when the Sphero connects
+                provider.ConnectedRobotEvent -= _onSpheroConnected;
+
+                //Remove event for when _sphero reports the Gyrometer has updated
+                _sphero.SensorControl.AccelerometerUpdatedEvent -= _sensorControl_AccelerometerUpdated;
 
                 //Tell _sphero to stop sending updates when the sensor is updated
                 _sphero.SensorControl.StopAll();

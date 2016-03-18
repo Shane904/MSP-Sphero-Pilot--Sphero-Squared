@@ -9,27 +9,12 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <ComboBox x:Name="comboMasterSelector" HorizontalAlignment="Left" Margin="51,50,0,0" VerticalAlignment="Top" Width="208" SelectionChanged="comboMasterSelector_SelectionChanged"/>
-        <RelativePanel x:Name="panelMaster" HorizontalAlignment="Left" Height="298" Margin="51,103,0,0" VerticalAlignment="Top" Width="456">
+        <RelativePanel x:Name="panelMaster" HorizontalAlignment="Left" Height="433" Margin="51,103,0,0" VerticalAlignment="Top" Width="456">
             <ToggleSwitch x:Name="toggleSpheroMaster" Header="Connect Master Sphero" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="-0.062,0.396" Toggled="toggleSpheroMaster_Toggled" Margin="0"/>
-            <Slider x:Name="masterOrientationSlider" HorizontalAlignment="Left" Margin="0,217,0,0" VerticalAlignment="Top" Width="456" Maximum="360" ValueChanged="masterOrientationSlider_ValueChanged"/>
-            <TextBlock x:Name="textMasterGyro" HorizontalAlignment="Left" Margin="73,64,0,-4" TextWrapping="Wrap" Text="Current:" VerticalAlignment="Top" Height="20" Width="60" TextAlignment="Right"/>
-            <ToggleSwitch x:Name="toggleStabilizeMaster" Header="Stabilization" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,159,0,-3.667" IsOn="True" Toggled="toggleStabilizeMaster_Toggled"/>
-            <TextBlock x:Name="textMasterGyroX" Margin="73,89,0,-3.667" TextWrapping="Wrap" Text="0000.0" VerticalAlignment="Top" Width="60" HorizontalAlignment="Left" TextAlignment="Right"/>
-            <TextBlock x:Name="textMasterGyroY" Margin="73,109,0,-3.667" TextWrapping="Wrap" Text="0000.0" VerticalAlignment="Top" Width="60" HorizontalAlignment="Left" TextAlignment="Right"/>
-            <TextBlock x:Name="textMasterGyroZ" Margin="73,129,0,-3.667" TextWrapping="Wrap" Text="0000.0" VerticalAlignment="Top" Width="60" HorizontalAlignment="Left" TextAlignment="Right"/>
-            <TextBlock x:Name="textMasterGyroDefault" HorizontalAlignment="Left" Margin="0,64,0,-4" TextWrapping="Wrap" Text="Default:" VerticalAlignment="Top" Height="20" Width="60" TextAlignment="Right"/>
-            <TextBlock x:Name="textMasterGyroDefaultX" Margin="0,89,0,-3.667" TextWrapping="Wrap" Text="0000.0" VerticalAlignment="Top" Width="60" HorizontalAlignment="Left" TextAlignment="Right"/>
-            <TextBlock x:Name="textMasterGyroDefaultY" Margin="0,109,0,-3.667" TextWrapping="Wrap" Text="0000.0" VerticalAlignment="Top" Width="60" HorizontalAlignment="Left" TextAlignment="Right"/>
-            <TextBlock x:Name="textMasterGyroDefaultZ" Margin="0,129,0,-3.667" TextWrapping="Wrap" Text="0000.0" VerticalAlignment="Top" Width="60" HorizontalAlignment="Left" TextAlignment="Right"/>
-            <TextBlock x:Name="textMasterOffset" HorizontalAlignment="Left" Margin="148,64,0,-4" TextWrapping="Wrap" Text="Offset:" VerticalAlignment="Top" Height="20" Width="60" TextAlignment="Right"/>
-            <TextBlock x:Name="textMasterOffsetX" Margin="148,89,0,-3.667" TextWrapping="Wrap" Text="0000.0" VerticalAlignment="Top" Width="60" HorizontalAlignment="Left" TextAlignment="Right"/>
-            <TextBlock x:Name="textMasterOffsetY" Margin="148,109,0,-3.667" TextWrapping="Wrap" Text="0000.0" VerticalAlignment="Top" Width="60" HorizontalAlignment="Left" TextAlignment="Right"/>
-            <TextBlock x:Name="textMasterOffsetZ" Margin="148,129,0,-3.667" TextWrapping="Wrap" Text="0000.0" VerticalAlignment="Top" Width="60" HorizontalAlignment="Left" TextAlignment="Right"/>
-            <Button x:Name="buttonResetMasterPosition" Content="Reset Default Position" HorizontalAlignment="Left" Margin="0,266,0,-4" VerticalAlignment="Top" Width="167" Click="buttonResetMasterPosition_Click"/>
+            <ToggleSwitch x:Name="toggleStabilizeMaster" Header="Stabilization" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,60,0,0" Toggled="toggleStabilizeMaster_Toggled"/>
         </RelativePanel>
         <ComboBox x:Name="comboFollowerSelector" HorizontalAlignment="Left" Margin="650,50,0,0" VerticalAlignment="Top" Width="208" SelectionChanged="comboFollowerSelector_SelectionChanged"/>
-        <RelativePanel x:Name="panelFollower" HorizontalAlignment="Left" Height="298" Margin="650,103,0,0" VerticalAlignment="Top" Width="456">
-            <Slider x:Name="followerOrientationSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="456" Maximum="360" ValueChanged="followerOrientationSlider_ValueChanged" Margin="0,217,0,0"/>
+        <RelativePanel x:Name="panelFollower" HorizontalAlignment="Left" Height="433" Margin="650,103,0,0" VerticalAlignment="Top" Width="456">
             <ToggleSwitch x:Name="toggleSpheroFollower" Header="Connect Follower Sphero" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="-0.062,0.396" Toggled="toggleSpheroFollower_Toggled" Margin="0"/>
         </RelativePanel>
         <TextBlock x:Name="textComboMaster" HorizontalAlignment="Left" Margin="51,25,0,0" TextWrapping="Wrap" Text="Select Master Sphero" VerticalAlignment="Top"/>
