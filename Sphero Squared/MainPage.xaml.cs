@@ -32,7 +32,7 @@ namespace Sphero_Squared
         public const float MAX_MOVE_PITCH = 60;
 
         //Holds the number for the maximum speed the Sphero can go
-        public const float MAX_SPEED = 0.8f;
+        public float max_speed;
 
         //Holds the number for the minimum roll to move sideways
         public const float MIN_MOVE_ROLL = 8;
@@ -41,7 +41,7 @@ namespace Sphero_Squared
         public const float MAX_MOVE_ROLL = 50;
 
         //Holds the number for the maximum amount of degrees the Sphero can turn from an action
-        public const int MAX_TURN = 45;
+        public int max_turn;
 
         //Holds the direction for the follower
         public int direction = 0;
@@ -69,6 +69,12 @@ namespace Sphero_Squared
 
             //Find the Spheros paired with the computer
             _findSpheros();
+
+            //Set max speed to initial slider value
+            max_speed = Convert.ToSingle(sliderMaxSpeed.Value / 100);
+
+            //Set max turn to initial slider value
+            max_turn = Convert.ToInt16(sliderMaxTurn.Value);
         }
 
         //Find the Spheros paired with the computer
@@ -260,7 +266,7 @@ namespace Sphero_Squared
                 }
 
                 //Calculate the speed
-                speed = ((pitch - MIN_MOVE_PITCH) / (MAX_MOVE_PITCH - MIN_MOVE_PITCH) * MAX_SPEED); 
+                speed = ((pitch - MIN_MOVE_PITCH) / (MAX_MOVE_PITCH - MIN_MOVE_PITCH) * max_speed); 
             }
 
             //If the absolute value of roll is more than the minimum
@@ -273,7 +279,7 @@ namespace Sphero_Squared
                 }
 
                 //Calculate the roll
-                direction += Convert.ToInt16((roll - MIN_MOVE_ROLL) / (MAX_MOVE_ROLL - MIN_MOVE_ROLL) * MAX_TURN);
+                direction += Convert.ToInt16((roll - MIN_MOVE_ROLL) / (MAX_MOVE_ROLL - MIN_MOVE_ROLL) * max_turn);
             }
 
             //The direction for the Roll has to be 0-359. Loop to make sure it is greater than 0
@@ -303,6 +309,16 @@ namespace Sphero_Squared
                     follower.sphero.Roll(direction, speed);
                 }
             }
+        }
+
+        private void sliderMaxSpeed_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            max_speed = Convert.ToSingle(sliderMaxSpeed.Value / 100);
+        }
+
+        private void sliderMaxTurn_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            max_turn = Convert.ToInt16(sliderMaxTurn.Value);
         }
     }
 }
