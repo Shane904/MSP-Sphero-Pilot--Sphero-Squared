@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Navigation;
 using RobotKit;
 using System.Diagnostics;
 using Windows.UI.Popups;
+using Windows.UI;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -40,6 +41,18 @@ namespace Sphero_Squared
         //Holds the number for the maximum roll to move sideways (treat anything above it as maximum)
         public const float MAX_MOVE_ROLL = 50;
 
+        //Holds the color for master when not moving
+        public Color STOPPED_COLOR = Color.FromArgb(1, 0, 0, 0);
+
+        //Holds the color for master when moving slowly
+        public Color SLOW_COLOR = Color.FromArgb(1, 255, 0, 0);
+
+        //Holds the color for master when moving medium speed
+        public Color MEDIUM_COLOR = Color.FromArgb(1, 255, 255, 0);
+
+        //Holds the color for master when moving fast
+        public Color FAST_COLOR = Color.FromArgb(1, 0, 255, 0);
+
         //Holds the number for the maximum amount of degrees the Sphero can turn from an action
         public int max_turn;
 
@@ -56,6 +69,8 @@ namespace Sphero_Squared
 
         //Holds the list of Spheros that are paired with the computer
         private List<Robot> _robots = new List<Robot>();
+
+      
 
         //Constructor
         public MainPage()
@@ -307,6 +322,25 @@ namespace Sphero_Squared
 
                     //Roll the follower
                     follower.sphero.Roll(direction, speed);
+
+                    //Set master color based on speed
+                    if(speed > max_speed/3*2)
+                    {
+                        master.color = FAST_COLOR;
+                    }
+                    else if(speed > max_speed/3)
+                    {
+                        master.color = MEDIUM_COLOR;
+                    }
+                    else if(speed > 0)
+                    {
+                        master.color = SLOW_COLOR;
+                    }
+                    else
+                    {
+                        master.color = STOPPED_COLOR;
+                    }
+
                 }
             }
         }

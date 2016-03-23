@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using RobotKit;
 using RobotKit.Internal;
 using System.Diagnostics;
+using Windows.UI;
 
 namespace Sphero_Squared
 {
@@ -34,6 +35,8 @@ namespace Sphero_Squared
         //Pitch (Y)
         private float _pitch = 0;
 
+        //Color of Sphero
+        private Color _color = Color.FromArgb(0, 0, 0, 0);
         
 
         //Getter for _sphero
@@ -42,6 +45,25 @@ namespace Sphero_Squared
             get
             {
                 return _sphero;
+            }
+        }
+
+        //Getter and setter for _color
+        public Color color
+        {
+            get
+            {
+                return _color;
+            }
+
+            set
+            {
+                //Only update if new color, that way Sphero doesn't get spammed with commands
+                if(!_color.Equals(value))
+                {
+                    _color = value;
+                    sphero.SetRGBLED(_color.R, color.G, color.B);
+                }
             }
         }
 
@@ -117,11 +139,10 @@ namespace Sphero_Squared
                 //Call the _mainPage's spheroConnected
                 _mainPage.spheroConnected(_isMaster, bluetoothName);
 
-
                 //Turn on the Back LED so the user knows what the back of the Sphero is
                 _sphero.SetBackLED(1);
 
-                //Turn off stabilization automatically if master. Allows for better experience while controlling
+                //Turn off stabilization automatically if master, otherwise turn it on. Allows for better experience while controlling
                 if (_isMaster)
                 {
                     setStabilization(false);
@@ -138,6 +159,7 @@ namespace Sphero_Squared
                 if (_isMaster)
                 {
                     _sphero.SensorControl.AccelerometerUpdatedEvent += _sensorControl_AccelerometerUpdated;
+                    Debug.WriteLine("Added AccelerometerUpdated Event for Master Sphero " + connectedSphero.BluetoothName);
                 }
 
                 Debug.WriteLine("Connected to " + (_isMaster ? "Master" : "Follower") + " Sphero: " + connectedSphero.BluetoothName);
@@ -233,6 +255,8 @@ namespace Sphero_Squared
             //Send the message to the Sphero
             _sphero.WriteToRobot(msg);
         }
+
+        
         
 
     }
