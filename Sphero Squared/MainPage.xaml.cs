@@ -1,21 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using RobotKit;
-using System.Diagnostics;
 using Windows.UI.Popups;
 using Windows.UI;
+using Microsoft.ApplicationInsights;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -61,6 +53,9 @@ namespace Sphero_Squared
 
         //Holds the last speed the follower went
         public float last_speed = 0f;
+
+        //The Azure Telemetry Client
+        private TelemetryClient tc = new TelemetryClient();
 
         //Holds the master SpheroController
         public SpheroController master;
@@ -320,7 +315,7 @@ namespace Sphero_Squared
             
 
 
-            Debug.WriteLine("{r: " + speed + ", theta: "+ direction +"}");
+            tc.TrackTrace("{r: " + speed + ", theta: "+ direction +"}");
 
 
 
@@ -333,7 +328,7 @@ namespace Sphero_Squared
                     //Set last_speed to current speed
                     last_speed = speed;
 
-                    Debug.WriteLine("Rolling follower: {Direction: " + direction + "; Speed: " + speed + "}");
+                    tc.TrackTrace("Rolling follower: {Direction: " + direction + "; Speed: " + speed + "}");
 
                     //Roll the follower
                     follower.roll(direction, speed);
@@ -373,13 +368,13 @@ namespace Sphero_Squared
 
                 follower.calibrate(Convert.ToInt16(sliderCalibrate.Value));
 
-                Debug.WriteLine("Set heading to " + sliderCalibrate.Value);
+                tc.TrackTrace("Set heading to " + sliderCalibrate.Value);
             }
         }
 
         private void sliderCalibrate_PointerEntered(object sender, PointerRoutedEventArgs e)
         { 
-            Debug.WriteLine("Calibration slider pressed, turn on back LED");
+            tc.TrackTrace("Calibration slider pressed, turn on back LED");
             if (follower != null && follower.isConnected)
             {
                 follower.sphero.SetBackLED(1);
@@ -388,7 +383,7 @@ namespace Sphero_Squared
 
         private void sliderCalibrate_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            Debug.WriteLine("Calibration slider released, turn off back LED");
+            tc.TrackTrace("Calibration slider released, turn off back LED");
             if (follower != null && follower.isConnected)
             {
                 follower.sphero.SetBackLED(0);

@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using RobotKit;
 using RobotKit.Internal;
-using System.Diagnostics;
 using Windows.UI;
+using Microsoft.ApplicationInsights;
 
 namespace Sphero_Squared
 {
     public class SpheroController : EventArgs
     {
+       
         //The Hz of refreshing sensor data
         public const int UPDATES_PER_SECOND = 2;
 
@@ -29,6 +26,9 @@ namespace Sphero_Squared
 
         //If SpheroController is connected via Bluetooth to a Sphero
         private bool _isConnected = false;
+
+        //The Azure Telemetry Client
+        private TelemetryClient tc = new TelemetryClient();
 
         //Roll (X)
         private float _roll = 0;
@@ -106,7 +106,7 @@ namespace Sphero_Squared
 
             _mainPage = mainPage;
 
-            Debug.WriteLine("Created new " + (_isMaster ? "Master" : "Follower") + " SpheroController for: " + spheroToConnect.BluetoothName);
+            tc.TrackTrace("Created new " + (_isMaster ? "Master" : "Follower") + " SpheroController for: " + spheroToConnect.BluetoothName);
         }
 
         //Attempt to connect to the Sphero.
@@ -125,7 +125,7 @@ namespace Sphero_Squared
         //Triggers when ConnectedRobotEvent happens
         private void _onSpheroConnected(object sender, Robot connectedSphero)
         {
-            Debug.WriteLine("About to connect to " + (_isMaster ? "Master" : "Follower") + " Sphero: " + connectedSphero.BluetoothName);
+            tc.TrackTrace("About to connect to " + (_isMaster ? "Master" : "Follower") + " Sphero: " + connectedSphero.BluetoothName);
             //Only set everything if it is the correct Sphero
             if (connectedSphero.BluetoothName == sphero.BluetoothName)
             {
@@ -161,10 +161,10 @@ namespace Sphero_Squared
                 if (_isMaster)
                 {
                     _sphero.SensorControl.AccelerometerUpdatedEvent += _sensorControl_AccelerometerUpdated;
-                    Debug.WriteLine("Added AccelerometerUpdated Event for Master Sphero " + connectedSphero.BluetoothName);
+                    tc.TrackTrace("Added AccelerometerUpdated Event for Master Sphero " + connectedSphero.BluetoothName);
                 }
 
-                Debug.WriteLine("Connected to " + (_isMaster ? "Master" : "Follower") + " Sphero: " + connectedSphero.BluetoothName);
+                tc.TrackTrace("Connected to " + (_isMaster ? "Master" : "Follower") + " Sphero: " + connectedSphero.BluetoothName);
 
                 //Set the _isConnected variable to true
                 _isConnected = true;
@@ -193,7 +193,7 @@ namespace Sphero_Squared
             //If master Sphero, report the pitch and roll to the MainPage
             _mainPage.handleMasterAttitude(_pitch, _roll);
 
-            Debug.WriteLine((_isMaster ? "Master" : "Follower") + "Sphero Attitude: {Pitch: " + _pitch + "; Roll: " + _roll + "}");
+            tc.TrackTrace((_isMaster ? "Master" : "Follower") + "Sphero Attitude: {Pitch: " + _pitch + "; Roll: " + _roll + "}");
         }
 
         //Disconnect from the Sphero (if connected)
@@ -202,7 +202,7 @@ namespace Sphero_Squared
             //If _sphero exists AND is connected to
             if (_sphero != null && isConnected)
             {
-                Debug.WriteLine("Disconnecting from " + bluetoothName);
+                tc.TrackTrace("Disconnecting from " + bluetoothName);
 
                 //Turn stabilization back on in the case it was turned off
                 setStabilization(true);
@@ -231,7 +231,7 @@ namespace Sphero_Squared
             }
             else
             {
-                Debug.WriteLine("Disconnect called, but Sphero doesn't exist or isn't connected.");
+                tc.TrackTrace("Disconnect called, but Sphero doesn't exist or isn't connected.");
             }
         }
 
