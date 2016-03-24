@@ -26,20 +26,23 @@ namespace Sphero_Squared
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        //Holds the number for the minimum pitch to move forward
-        public const float MIN_MOVE_PITCH = 15;
+        //Holds the number for the minimum pitch to move
+        public const float MIN_MOVE_PITCH = 10;
 
-        //Holds the number for the maximum pitch to move forward (treat anything above it as maximum)
+        //Holds the number for the maximum pitch to move (treat anything above it as maximum)
         public const float MAX_MOVE_PITCH = 60;
 
         //Holds the number for the maximum speed the Sphero can go
         public float max_speed;
 
-        //Holds the number for the minimum roll to move sideways
-        public const float MIN_MOVE_ROLL = 8;
+        //Holds the number for the minimum roll to move
+        public const float MIN_MOVE_ROLL = 10;
 
-        //Holds the number for the maximum roll to move sideways (treat anything above it as maximum)
-        public const float MAX_MOVE_ROLL = 50;
+        //Holds the number for the maximum roll to move (treat anything above it as maximum)
+        public const float MAX_MOVE_ROLL = 60;
+
+        //Holds the maximum possible value of r (treat anything above it as maximum)
+        public const float MAX_MOVE_R = 60;
 
         //Holds the color for master when not moving
         public Color STOPPED_COLOR = Color.FromArgb(1, 0, 0, 0);
@@ -52,9 +55,6 @@ namespace Sphero_Squared
 
         //Holds the color for master when moving fast
         public Color FAST_COLOR = Color.FromArgb(1, 0, 255, 0);
-
-        //Holds the number for the maximum amount of degrees the Sphero can turn from an action
-        public int max_turn;
 
         //Holds the direction for the follower
         public int direction = 0;
@@ -87,9 +87,6 @@ namespace Sphero_Squared
 
             //Set max speed to initial slider value
             max_speed = Convert.ToSingle(sliderMaxSpeed.Value / 100);
-
-            //Set max turn to initial slider value
-            max_turn = Convert.ToInt16(sliderMaxTurn.Value);
         }
 
         //Find the Spheros paired with the computer
@@ -264,50 +261,68 @@ namespace Sphero_Squared
             //Create the speed variable (0-1)
             float speed = 0;
 
-            //If pitch is < 0, set pitch to -pitch and reverse the direction
-            if(pitch < 0)
+            float r = 0;
+
+            float x = 0;
+            float y = 0;
+
+            if(Math.Abs(pitch) >= MIN_MOVE_PITCH)
             {
-                pitch = -pitch;
-                direction += 180;
+                y = pitch - MIN_MOVE_PITCH;
             }
 
-            //If the pitch is more than the minumum
-            if(pitch > MIN_MOVE_PITCH)
+            if(Math.Abs(roll) >= MIN_MOVE_ROLL)
             {
-                //If the pitch is more than the maximum, set it to the maximum
-                if(pitch > MAX_MOVE_PITCH)
+                x = roll - MIN_MOVE_ROLL;
+            }
+
+
+            //Use Pythagorean Theorem to convert to distance (we'll use it to calculate speed)
+            r = Convert.ToSingle(Math.Sqrt(y*y + x*x));
+
+            if(r > MAX_MOVE_R)
+            {
+                r = MAX_MOVE_R;
+            }
+
+            //Calculate speed
+            speed = (r / MAX_MOVE_R * max_speed);
+
+
+
+            //Use inverse tangent to calculate theta (we'll use it for direction)
+            if(x > 0)
+            {
+                direction = Convert.ToInt16(Math.Atan(y / x) * 180/Math.PI);
+            }
+            else if(x < 0)
+            {
+                direction = Convert.ToInt16(Math.Atan(y / x) * 180 / Math.PI) - 180;
+            }
+            else
+            {
+                if(y > 0)
                 {
-                    pitch = MAX_MOVE_PITCH;
+                    direction = 90;
                 }
-
-                //Calculate the speed
-                speed = ((pitch - MIN_MOVE_PITCH) / (MAX_MOVE_PITCH - MIN_MOVE_PITCH) * max_speed); 
-            }
-
-            //If the absolute value of roll is more than the minimum
-            if(Math.Abs(roll) > MIN_MOVE_ROLL)
-            {
-                //If the absolute value of roll is more than the maximum, set it to the maximum (same sign as original value)
-                if(Math.Abs(roll) > MAX_MOVE_ROLL)
+                else if(y < 0)
                 {
-                    roll = MAX_MOVE_ROLL * Math.Sign(roll);
+                    direction = -90;
                 }
-
-                //Calculate the roll
-                direction += Convert.ToInt16((roll - MIN_MOVE_ROLL) / (MAX_MOVE_ROLL - MIN_MOVE_ROLL) * max_turn);
+                //In the case of y and x being 0, we'll just leave direction as it was since the Sphero won't be rolling.
             }
 
-            //The direction for the Roll has to be 0-359. Loop to make sure it is greater than 0
-            while (direction < 0)
-            {
-                direction += 360;
-            }
+            //0 degrees for the Sphero means it moves forward from its tail light. So subtract 90 degrees from the direction we calculated.
+            direction -= 90;
 
-            //The direction for the Roll has to be 0-359. Loop to make sure it is less than 359
-            while (direction > 359)
-            {
-                direction -= 360;
-            }
+            
+
+            
+
+
+            Debug.WriteLine("{r: " + speed + ", theta: "+ direction +"}");
+
+
 
             //If the follower Sphero is connected, roll it
             if (follower != null && follower.isConnected)
@@ -321,7 +336,7 @@ namespace Sphero_Squared
                     Debug.WriteLine("Rolling follower: {Direction: " + direction + "; Speed: " + speed + "}");
 
                     //Roll the follower
-                    follower.sphero.Roll(direction, speed);
+                    follower.roll(direction, speed);
 
                     //Set master color based on speed
                     if(speed > max_speed/3*2)
@@ -350,9 +365,34 @@ namespace Sphero_Squared
             max_speed = Convert.ToSingle(sliderMaxSpeed.Value / 100);
         }
 
-        private void sliderMaxTurn_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        private void sliderCalibrate_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            max_turn = Convert.ToInt16(sliderMaxTurn.Value);
+            if(follower != null && follower.isConnected)
+            {
+                follower.roll(Convert.ToInt16(sliderCalibrate.Value), 0, true);
+
+                follower.calibrate(Convert.ToInt16(sliderCalibrate.Value));
+
+                Debug.WriteLine("Set heading to " + sliderCalibrate.Value);
+            }
+        }
+
+        private void sliderCalibrate_PointerEntered(object sender, PointerRoutedEventArgs e)
+        { 
+            Debug.WriteLine("Calibration slider pressed, turn on back LED");
+            if (follower != null && follower.isConnected)
+            {
+                follower.sphero.SetBackLED(1);
+            }
+        }
+
+        private void sliderCalibrate_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("Calibration slider released, turn off back LED");
+            if (follower != null && follower.isConnected)
+            {
+                follower.sphero.SetBackLED(0);
+            }
         }
     }
 }

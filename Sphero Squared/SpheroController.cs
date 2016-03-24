@@ -37,7 +37,9 @@ namespace Sphero_Squared
 
         //Color of Sphero
         private Color _color = Color.FromArgb(0, 0, 0, 0);
-        
+
+        //Direction when pointing forward (add to direction when rolling)
+        private int _calibrateOffset = 0;
 
         //Getter for _sphero
         public Sphero sphero
@@ -139,17 +141,17 @@ namespace Sphero_Squared
                 //Call the _mainPage's spheroConnected
                 _mainPage.spheroConnected(_isMaster, bluetoothName);
 
-                //Turn on the Back LED so the user knows what the back of the Sphero is
-                _sphero.SetBackLED(1);
 
-                //Turn off stabilization automatically if master, otherwise turn it on. Allows for better experience while controlling
+                //Turn off stabilization automatically and back LED on if master, otherwise turn stabilization on and back LED off. Allows for better experience while controlling
                 if (_isMaster)
                 {
                     setStabilization(false);
+                    _sphero.SetBackLED(1);
                 }
                 else
                 {
                     setStabilization(true);
+                    _sphero.SetBackLED(0);
                 }
 
                 //Get 4 updates per second
@@ -186,7 +188,7 @@ namespace Sphero_Squared
             _pitch = Convert.ToSingle(180 * Math.Atan(_accelerometerReading.Y / Math.Sqrt(_accelerometerReading.X * _accelerometerReading.X + _accelerometerReading.Z * _accelerometerReading.Z)) / Math.PI);
 
             //Calculate the roll from the _accelerometerReading
-            _roll = Convert.ToSingle(180 * Math.Atan(_accelerometerReading.X / Math.Sqrt(_accelerometerReading.Y * _accelerometerReading.Y + _accelerometerReading.Z * _accelerometerReading.Z)) / Math.PI);
+            _roll = -Convert.ToSingle(180 * Math.Atan(_accelerometerReading.X / Math.Sqrt(_accelerometerReading.Y * _accelerometerReading.Y + _accelerometerReading.Z * _accelerometerReading.Z)) / Math.PI);
 
             //If master Sphero, report the pitch and roll to the MainPage
             _mainPage.handleMasterAttitude(_pitch, _roll);
@@ -256,8 +258,38 @@ namespace Sphero_Squared
             _sphero.WriteToRobot(msg);
         }
 
-        
-        
+        //Set the calibration offset
+        public void calibrate(int offset)
+        {
+            _calibrateOffset = offset;
+        }
+
+        //Roll the Sphero and take the _calibrateOffset into account (unless otherwise told)
+        public void roll(int direction, float speed, bool ignoreCalibrateOffset = false)
+        {
+
+            if (!ignoreCalibrateOffset)
+            {
+                direction += _calibrateOffset;
+            }
+
+            //If the direction is less than 0, convert it to not be less than 0
+            while (direction < 0)
+            {
+                direction += 360;
+            }
+
+            //If the direction is greater than 359, convert it to not be greater than 359
+            while (direction > 359)
+            {
+                direction -= 360;
+            }
+
+            sphero.Roll(direction, speed);
+        }
+
+
+
 
     }
 }

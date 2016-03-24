@@ -16,10 +16,10 @@
         <ComboBox x:Name="comboFollowerSelector" HorizontalAlignment="Left" Margin="650,50,0,0" VerticalAlignment="Top" Width="208" SelectionChanged="comboFollowerSelector_SelectionChanged"/>
         <RelativePanel x:Name="panelFollower" HorizontalAlignment="Left" Height="433" Margin="650,103,0,0" VerticalAlignment="Top" Width="456">
             <ToggleSwitch x:Name="toggleSpheroFollower" Header="Connect Follower Sphero" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="-0.062,0.396" Toggled="toggleSpheroFollower_Toggled" Margin="0"/>
-            <Slider x:Name="sliderMaxSpeed" HorizontalAlignment="Left" Height="40" Margin="0,126,-448,-122" VerticalAlignment="Top" Width="456" Maximum="100" LargeChange="10" SmallChange="1" Value="60" ValueChanged="sliderMaxSpeed_ValueChanged" Minimum="1"/>
+            <Slider x:Name="sliderMaxSpeed" HorizontalAlignment="Left" Height="40" Margin="0,126,-448,-122" VerticalAlignment="Top" Width="456" Maximum="100" LargeChange="10" SmallChange="1" Value="45" ValueChanged="sliderMaxSpeed_ValueChanged" Minimum="1"/>
             <TextBlock x:Name="textMaxSpeedLabel" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="Max Speed" VerticalAlignment="Top" Width="83" Margin="0,108,-21,-108"/>
-            <Slider x:Name="sliderMaxTurn" HorizontalAlignment="Left" Height="40" Margin="0,189,-448,-185" VerticalAlignment="Top" Width="456" Maximum="90" LargeChange="0.1" SmallChange="0.01" Value="45" Minimum="1" ValueChanged="sliderMaxTurn_ValueChanged"/>
-            <TextBlock x:Name="textMaxSpeedLabel_Copy" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="Max Turn" VerticalAlignment="Top" Width="83" Margin="0,171,-19.667,-171"/>
+            <Slider x:Name="sliderCalibrate" HorizontalAlignment="Left" Height="40" Margin="0,189,-448,-185" VerticalAlignment="Top" Width="456" Maximum="359" LargeChange="10" SmallChange="1" ValueChanged="sliderCalibrate_ValueChanged" PointerEntered="sliderCalibrate_PointerEntered"  PointerExited="sliderCalibrate_PointerExited" />
+            <TextBlock x:Name="textCalibrateDirection" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="Calibrate" VerticalAlignment="Top" Width="83" Margin="0,171,-19.667,-171"/>
         </RelativePanel>
         <TextBlock x:Name="textComboMaster" HorizontalAlignment="Left" Margin="51,25,0,0" TextWrapping="Wrap" Text="Select Master Sphero" VerticalAlignment="Top"/>
         <TextBlock x:Name="textComboFollower" HorizontalAlignment="Left" Margin="650,25,0,0" TextWrapping="Wrap" Text="Select Follower Sphero" VerticalAlignment="Top"/>
