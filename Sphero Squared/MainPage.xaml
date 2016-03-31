@@ -12,6 +12,7 @@
         <RelativePanel x:Name="panelMaster" HorizontalAlignment="Left" Height="433" Margin="51,103,0,0" VerticalAlignment="Top" Width="456">
             <ToggleSwitch x:Name="toggleSpheroMaster" Header="Connect Master Sphero" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="-0.062,0.396" Toggled="toggleSpheroMaster_Toggled" Margin="0"/>
             <ToggleSwitch x:Name="toggleStabilizeMaster" Header="Stabilization" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,60,0,0" Toggled="toggleStabilizeMaster_Toggled"/>
+            <ToggleSwitch x:Name="toggleShakeMasterOnCollision" Header="Shake on Collision" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,125,0,-65" Toggled="toggleStabilizeMaster_Toggled"/>
         </RelativePanel>
         <ComboBox x:Name="comboFollowerSelector" HorizontalAlignment="Left" Margin="650,50,0,0" VerticalAlignment="Top" Width="208" SelectionChanged="comboFollowerSelector_SelectionChanged"/>
         <RelativePanel x:Name="panelFollower" HorizontalAlignment="Left" Height="433" Margin="650,103,0,0" VerticalAlignment="Top" Width="456">

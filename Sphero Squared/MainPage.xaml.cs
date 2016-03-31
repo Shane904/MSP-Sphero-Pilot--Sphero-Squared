@@ -8,6 +8,8 @@ using RobotKit;
 using Windows.UI.Popups;
 using Windows.UI;
 using Microsoft.ApplicationInsights;
+using System.Diagnostics;
+using System.Threading;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -65,7 +67,16 @@ namespace Sphero_Squared
         //Holds the list of Spheros that are paired with the computer
         private List<Robot> _robots = new List<Robot>();
 
-      
+        //How many times to shake master per collision. Must be even
+        public const int SHAKE_PER_COLLISION = 6;
+
+        //How fast to shake master for collision in ms
+        public const int SHAKE_SPEED = 25;
+
+        //Amount of times master Sphero has been shaken on collision
+        private int _numShake = 0;
+
+
 
         //Constructor
         public MainPage()
@@ -311,27 +322,17 @@ namespace Sphero_Squared
             direction -= 90;
 
             
-
-            
-
-
-            tc.TrackTrace("{r: " + speed + ", theta: "+ direction +"}");
-
-
-
-            //If the follower Sphero is connected, roll it
-            if (follower != null && follower.isConnected)
-            {
                 //Don't do this if the last speed was 0 and this speed was 0. It spams the follower and the follower gets overloaded
                 if (!(last_speed == 0 && last_speed == speed))
                 {
                     //Set last_speed to current speed
                     last_speed = speed;
 
-                    tc.TrackTrace("Rolling follower: {Direction: " + direction + "; Speed: " + speed + "}");
-
-                    //Roll the follower
+                //If the follower Sphero is connected, roll the follower
+                if (follower != null && follower.isConnected)
+                {
                     follower.roll(direction, speed);
+                }
 
                     //Set master color based on speed
                     if(speed > max_speed/3*2)
@@ -352,7 +353,6 @@ namespace Sphero_Squared
                     }
 
                 }
-            }
         }
 
         private void sliderMaxSpeed_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
@@ -387,6 +387,57 @@ namespace Sphero_Squared
             if (follower != null && follower.isConnected)
             {
                 follower.sphero.SetBackLED(0);
+            }
+        }
+
+        public void collisionDetected()
+        {
+            tc.TrackTrace("Collided with wall");
+
+            //Only do this if it isn't in the middle of already shaking
+            if (toggleShakeMasterOnCollision.IsOn && _numShake == 0)
+            {
+                master.setStabilization(true);
+                Timer t = new Timer(_shakeMaster, null, SHAKE_SPEED, Timeout.Infinite);
+            }
+        }
+
+
+
+        //Handles the shake timer for when the follower reports running into a wall
+        private void _shakeMaster(object state)
+        {
+            int heading = 60;
+            bool turnOffStabilization = false;
+
+            //If _numShake is odd, roll backward
+            if (_numShake % 2 != 0)
+            {
+                heading = 300;
+            }
+
+            //If _numShake is greater than SHAKE_PER_COLLISION, reorient the master Sphero, turn off stabilization, and reset _numShake. Else increment _numShake and add new timer
+            if (_numShake > SHAKE_PER_COLLISION)
+            {
+                _numShake = 0;
+                turnOffStabilization = true;
+                heading = 180;
+            }
+            else
+            {
+                _numShake++;
+                Timer t = new Timer(_shakeMaster, null, SHAKE_SPEED, Timeout.Infinite);
+            }
+
+            tc.TrackTrace("Shake called. _numShake: " + _numShake + ", heading: " + heading);
+
+            //Roll
+            master.roll(heading, 0);
+
+            //Turn off stabilization if told to
+            if (turnOffStabilization)
+            {
+                master.setStabilization(false);
             }
         }
     }

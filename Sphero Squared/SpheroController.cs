@@ -3,6 +3,7 @@ using RobotKit;
 using RobotKit.Internal;
 using Windows.UI;
 using Microsoft.ApplicationInsights;
+using System.Diagnostics;
 
 namespace Sphero_Squared
 {
@@ -10,7 +11,7 @@ namespace Sphero_Squared
     {
        
         //The Hz of refreshing sensor data
-        public const int UPDATES_PER_SECOND = 2;
+        public const int UPDATES_PER_SECOND = 4;
 
         //The Sphero Object
         private Sphero _sphero;
@@ -154,7 +155,7 @@ namespace Sphero_Squared
                     _sphero.SetBackLED(0);
                 }
 
-                //Get 4 updates per second
+                //Set updates per second
                 _sphero.SensorControl.Hz = UPDATES_PER_SECOND;
 
                 //Add event for when _sphero reports the Accelerometer has updated if master
@@ -163,12 +164,26 @@ namespace Sphero_Squared
                     _sphero.SensorControl.AccelerometerUpdatedEvent += _sensorControl_AccelerometerUpdated;
                     tc.TrackTrace("Added AccelerometerUpdated Event for Master Sphero " + connectedSphero.BluetoothName);
                 }
+                //Add event for when _sphero reports a Collision with a wall if follower
+                else
+                {
+                    _sphero.CollisionControl.StartDetectionForWallCollisions();
+                    _sphero.CollisionControl.CollisionDetectedEvent += _collisionControl_CollisionDetected;
+                    tc.TrackTrace("Added CollisionDetected Event for Follower Sphero " + connectedSphero.BluetoothName);
+                }
+
 
                 tc.TrackTrace("Connected to " + (_isMaster ? "Master" : "Follower") + " Sphero: " + connectedSphero.BluetoothName);
 
                 //Set the _isConnected variable to true
                 _isConnected = true;
             }
+        }
+
+        //Triggers when _sphero reports a collision with a wall
+        private void _collisionControl_CollisionDetected(object sender, CollisionData collisionData)
+        {
+            _mainPage.collisionDetected();
         }
 
         //Triggers when _sphero reports the Accelerometer has updated
@@ -192,8 +207,6 @@ namespace Sphero_Squared
 
             //If master Sphero, report the pitch and roll to the MainPage
             _mainPage.handleMasterAttitude(_pitch, _roll);
-
-            tc.TrackTrace((_isMaster ? "Master" : "Follower") + "Sphero Attitude: {Pitch: " + _pitch + "; Roll: " + _roll + "}");
         }
 
         //Disconnect from the Sphero (if connected)
@@ -216,8 +229,14 @@ namespace Sphero_Squared
                 //Remove event for when _sphero reports the Gyrometer has updated
                 _sphero.SensorControl.AccelerometerUpdatedEvent -= _sensorControl_AccelerometerUpdated;
 
+                //Remove event for when _sphero reports a collision
+                _sphero.CollisionControl.CollisionDetectedEvent -= _collisionControl_CollisionDetected;
+
                 //Tell _sphero to stop sending updates when the sensor is updated
                 _sphero.SensorControl.StopAll();
+
+                //Tell _sphero to stop sending updates on collision
+                _sphero.CollisionControl.StopDetection();
 
                 //Tell the _sphero to turn off
                 _sphero.Sleep();
