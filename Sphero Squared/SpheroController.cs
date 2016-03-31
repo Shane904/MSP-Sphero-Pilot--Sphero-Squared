@@ -9,7 +9,7 @@ namespace Sphero_Squared
 {
     public class SpheroController : EventArgs
     {
-       
+
         //The Hz of refreshing sensor data
         public const int UPDATES_PER_SECOND = 4;
 
@@ -62,7 +62,7 @@ namespace Sphero_Squared
             set
             {
                 //Only update if new color, that way Sphero doesn't get spammed with commands
-                if(!_color.Equals(value))
+                if (!_color.Equals(value))
                 {
                     _color = value;
                     sphero.SetRGBLED(_color.R, color.G, color.B);
@@ -93,8 +93,8 @@ namespace Sphero_Squared
         {
             set
             {
-                if(_sphero != null)
-                sphero.Roll(value, 0);
+                if (_sphero != null)
+                    sphero.Roll(value, 0);
             }
         }
 
@@ -122,7 +122,7 @@ namespace Sphero_Squared
             //Try to connect to the Sphero
             provider.ConnectRobot(sphero);
         }
-       
+
         //Triggers when ConnectedRobotEvent happens
         private void _onSpheroConnected(object sender, Robot connectedSphero)
         {
@@ -198,7 +198,7 @@ namespace Sphero_Squared
 
         //Calculate the attitude (pitch, roll)
         private void _calculateAttitude()
-        {            
+        {
             //Calculate the pitch from the _accelerometerReading
             _pitch = Convert.ToSingle(180 * Math.Atan(_accelerometerReading.Y / Math.Sqrt(_accelerometerReading.X * _accelerometerReading.X + _accelerometerReading.Z * _accelerometerReading.Z)) / Math.PI);
 
@@ -232,12 +232,6 @@ namespace Sphero_Squared
                 //Remove event for when _sphero reports a collision
                 _sphero.CollisionControl.CollisionDetectedEvent -= _collisionControl_CollisionDetected;
 
-                //Tell _sphero to stop sending updates when the sensor is updated
-                _sphero.SensorControl.StopAll();
-
-                //Tell _sphero to stop sending updates on collision
-                _sphero.CollisionControl.StopDetection();
-
                 //Tell the _sphero to turn off
                 _sphero.Sleep();
 
@@ -261,7 +255,7 @@ namespace Sphero_Squared
             byte paramByte = (byte)0;
 
             //If stabilize is true, set paramByte to 1 (enable stabilization)
-            if(stabilize)
+            if (stabilize)
             {
                 paramByte = (byte)1;
             }

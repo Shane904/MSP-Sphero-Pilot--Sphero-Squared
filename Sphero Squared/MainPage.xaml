@@ -5,26 +5,35 @@
     xmlns:local="using:Sphero_Squared"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d" Width="714" Height="476">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <ComboBox x:Name="comboMasterSelector" HorizontalAlignment="Left" Margin="51,50,0,0" VerticalAlignment="Top" Width="208" SelectionChanged="comboMasterSelector_SelectionChanged"/>
-        <RelativePanel x:Name="panelMaster" HorizontalAlignment="Left" Height="433" Margin="51,103,0,0" VerticalAlignment="Top" Width="456">
-            <ToggleSwitch x:Name="toggleSpheroMaster" Header="Connect Master Sphero" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="-0.062,0.396" Toggled="toggleSpheroMaster_Toggled" Margin="0"/>
+
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Width="714" Height="476" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+        <ComboBox x:Name="comboMasterSelector" HorizontalAlignment="Left" Margin="0,25,0,0" VerticalAlignment="Top" Width="208" SelectionChanged="comboMasterSelector_SelectionChanged"/>
+        <RelativePanel x:Name="panelMaster" HorizontalAlignment="Left" Height="398" Margin="0,78,0,0" VerticalAlignment="Top" Width="456">
+            <ToggleSwitch x:Name="toggleSpheroMaster" Header="Connect Master Sphero" HorizontalAlignment="Left" VerticalAlignment="Top" Toggled="toggleSpheroMaster_Toggled" Margin="0"/>
             <ToggleSwitch x:Name="toggleStabilizeMaster" Header="Stabilization" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,60,0,0" Toggled="toggleStabilizeMaster_Toggled"/>
             <ToggleSwitch x:Name="toggleShakeMasterOnCollision" Header="Shake on Collision" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,125,0,-65" Toggled="toggleStabilizeMaster_Toggled"/>
         </RelativePanel>
-        <ComboBox x:Name="comboFollowerSelector" HorizontalAlignment="Left" Margin="650,50,0,0" VerticalAlignment="Top" Width="208" SelectionChanged="comboFollowerSelector_SelectionChanged"/>
-        <RelativePanel x:Name="panelFollower" HorizontalAlignment="Left" Height="433" Margin="650,103,0,0" VerticalAlignment="Top" Width="456">
-            <ToggleSwitch x:Name="toggleSpheroFollower" Header="Connect Follower Sphero" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="-0.062,0.396" Toggled="toggleSpheroFollower_Toggled" Margin="0"/>
-            <Slider x:Name="sliderMaxSpeed" HorizontalAlignment="Left" Height="40" Margin="0,126,-448,-122" VerticalAlignment="Top" Width="456" Maximum="100" LargeChange="10" SmallChange="1" Value="45" ValueChanged="sliderMaxSpeed_ValueChanged" Minimum="1"/>
-            <TextBlock x:Name="textMaxSpeedLabel" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="Max Speed" VerticalAlignment="Top" Width="83" Margin="0,108,-21,-108"/>
-            <Slider x:Name="sliderCalibrate" HorizontalAlignment="Left" Height="40" Margin="0,189,-448,-185" VerticalAlignment="Top" Width="456" Maximum="359" LargeChange="10" SmallChange="1" ValueChanged="sliderCalibrate_ValueChanged" PointerEntered="sliderCalibrate_PointerEntered"  PointerExited="sliderCalibrate_PointerExited" />
-            <TextBlock x:Name="textCalibrateDirection" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="Calibrate" VerticalAlignment="Top" Width="83" Margin="0,171,-19.667,-171"/>
+        <ComboBox x:Name="comboFollowerSelector" HorizontalAlignment="Left" Margin="258,25,0,0" VerticalAlignment="Top" Width="208" SelectionChanged="comboFollowerSelector_SelectionChanged"/>
+        <RelativePanel x:Name="panelFollower" HorizontalAlignment="Left" Height="398" Margin="258,78,0,0" VerticalAlignment="Top" Width="456">
+            <ToggleSwitch x:Name="toggleSpheroFollower" Header="Connect Follower Sphero" HorizontalAlignment="Left" VerticalAlignment="Top" Toggled="toggleSpheroFollower_Toggled" Margin="0"/>
+            <Slider x:Name="sliderMaxSpeed" HorizontalAlignment="Left" Height="40" Margin="0,154,-448,-150" VerticalAlignment="Top" Width="456" Maximum="100" LargeChange="10" SmallChange="1" Value="45" ValueChanged="sliderMaxSpeed_ValueChanged" Minimum="1"/>
+            <TextBlock x:Name="textMaxSpeedLabel" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="Max Speed" VerticalAlignment="Top" Width="83" Margin="0,136,-20,-136"/>
+            <Slider x:Name="sliderCalibrate" HorizontalAlignment="Left" Height="40" Margin="0,217,-448,-213" VerticalAlignment="Top" Width="456" Maximum="359" LargeChange="10" SmallChange="1" ValueChanged="sliderCalibrate_ValueChanged" PointerEntered="sliderCalibrate_PointerEntered"  PointerExited="sliderCalibrate_PointerExited" />
+            <TextBlock x:Name="textCalibrateDirection" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="Calibrate" VerticalAlignment="Top" Width="83" Margin="0,199,-20,-199"/>
+            <ToggleSwitch x:Name="toggleSyncFollowerColor" Header="Sync Follower Color with Master" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,65,0,-65" Toggled="toggleSyncFollowerColor_Toggled"/>
+            <RelativePanel x:Name="panelFollowerColor" HorizontalAlignment="Left" Height="140" VerticalAlignment="Top" Width="456" Margin="0,262,-356,-302">
+                <TextBlock x:Name="textFollowerColorPicker" HorizontalAlignment="Left" Height="20" TextWrapping="Wrap" Text="Color Picker" VerticalAlignment="Top" Width="83" Margin="0,10,-58,-10"/>
+                <Slider x:Name="sliderFollowerColor_Red" HorizontalAlignment="Left" Height="40" Margin="0,28,-447,-24" VerticalAlignment="Top" Width="456" Maximum="255" LargeChange="10" SmallChange="1" Foreground="Red" Background="#33FF0000" ValueChanged="sliderFollowerColor_ValueChanged" Value="63"/>
+                <Slider x:Name="sliderFollowerColor_Green" HorizontalAlignment="Left" Height="40" Margin="0,66,-447,-62" VerticalAlignment="Top" Width="456" Maximum="255" LargeChange="10" SmallChange="1" Value="127" Foreground="Lime" Background="#3300FF00" ValueChanged="sliderFollowerColor_ValueChanged"/>
+                <Slider x:Name="sliderFollowerColor_Blue" HorizontalAlignment="Left" Height="40" Margin="0,104,-447,-100" VerticalAlignment="Top" Width="456" Maximum="255" LargeChange="10" SmallChange="1" Value="255" Foreground="Blue" Background="#330000FF" ValueChanged="sliderFollowerColor_ValueChanged"/>
+            </RelativePanel>
         </RelativePanel>
-        <TextBlock x:Name="textComboMaster" HorizontalAlignment="Left" Margin="51,25,0,0" TextWrapping="Wrap" Text="Select Master Sphero" VerticalAlignment="Top"/>
-        <TextBlock x:Name="textComboFollower" HorizontalAlignment="Left" Margin="650,25,0,0" TextWrapping="Wrap" Text="Select Follower Sphero" VerticalAlignment="Top"/>
-
+        <TextBlock x:Name="textComboMaster" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Select Master Sphero" VerticalAlignment="Top"/>
+        <TextBlock x:Name="textComboFollower" HorizontalAlignment="Left" Margin="258,0,0,0" TextWrapping="Wrap" Text="Select Follower Sphero" VerticalAlignment="Top"/>
 
     </Grid>
 </Page>

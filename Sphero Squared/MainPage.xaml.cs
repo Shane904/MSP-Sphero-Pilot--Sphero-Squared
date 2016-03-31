@@ -161,7 +161,7 @@ namespace Sphero_Squared
                     //Set master to null
                     master = null;
                     //Update the toggle's header
-                   toggleSpheroMaster.Header = "Disconnected";
+                    toggleSpheroMaster.Header = "Disconnected";
                 }
                 //Enable the ComboBox for selecting master Sphero
                 comboMasterSelector.IsEnabled = true;
@@ -239,8 +239,8 @@ namespace Sphero_Squared
         private void toggleStabilizeMaster_Toggled(object sender, RoutedEventArgs e)
         {
             //Update master's stabilization if master is not null
-            if(master != null)
-            master.setStabilization(toggleStabilizeMaster.IsOn);
+            if (master != null)
+                master.setStabilization(toggleStabilizeMaster.IsOn);
         }
 
         //When the ComboBox for selecting the master Sphero is changed
@@ -272,21 +272,21 @@ namespace Sphero_Squared
             float x = 0;
             float y = 0;
 
-            if(Math.Abs(pitch) >= MIN_MOVE_PITCH)
+            if (Math.Abs(pitch) >= MIN_MOVE_PITCH)
             {
                 y = pitch - MIN_MOVE_PITCH;
             }
 
-            if(Math.Abs(roll) >= MIN_MOVE_ROLL)
+            if (Math.Abs(roll) >= MIN_MOVE_ROLL)
             {
                 x = roll - MIN_MOVE_ROLL;
             }
 
 
             //Use Pythagorean Theorem to convert to distance (we'll use it to calculate speed)
-            r = Convert.ToSingle(Math.Sqrt(y*y + x*x));
+            r = Convert.ToSingle(Math.Sqrt(y * y + x * x));
 
-            if(r > MAX_MOVE_R)
+            if (r > MAX_MOVE_R)
             {
                 r = MAX_MOVE_R;
             }
@@ -297,21 +297,21 @@ namespace Sphero_Squared
 
 
             //Use inverse tangent to calculate theta (we'll use it for direction)
-            if(x > 0)
+            if (x > 0)
             {
-                direction = Convert.ToInt16(Math.Atan(y / x) * 180/Math.PI);
+                direction = Convert.ToInt16(Math.Atan(y / x) * 180 / Math.PI);
             }
-            else if(x < 0)
+            else if (x < 0)
             {
                 direction = Convert.ToInt16(Math.Atan(y / x) * 180 / Math.PI) - 180;
             }
             else
             {
-                if(y > 0)
+                if (y > 0)
                 {
                     direction = 90;
                 }
-                else if(y < 0)
+                else if (y < 0)
                 {
                     direction = -90;
                 }
@@ -321,38 +321,44 @@ namespace Sphero_Squared
             //0 degrees for the Sphero means it moves forward from its tail light. So subtract 90 degrees from the direction we calculated.
             direction -= 90;
 
-            
-                //Don't do this if the last speed was 0 and this speed was 0. It spams the follower and the follower gets overloaded
-                if (!(last_speed == 0 && last_speed == speed))
+
+            //Don't do this if the last speed was 0 and this speed was 0. It spams the follower and the follower may get overloaded
+            if (!(last_speed == 0 && last_speed == speed))
+            {
+                //Set last_speed to current speed
+                last_speed = speed;
+
+                //Set master color based on speed
+                if (speed > max_speed / 3 * 2)
                 {
-                    //Set last_speed to current speed
-                    last_speed = speed;
+                    master.color = FAST_COLOR;
+                }
+                else if (speed > max_speed / 3)
+                {
+                    master.color = MEDIUM_COLOR;
+                }
+                else if (speed > 0)
+                {
+                    master.color = SLOW_COLOR;
+                }
+                else
+                {
+                    master.color = STOPPED_COLOR;
+                }
+
 
                 //If the follower Sphero is connected, roll the follower
                 if (follower != null && follower.isConnected)
                 {
                     follower.roll(direction, speed);
-                }
 
-                    //Set master color based on speed
-                    if(speed > max_speed/3*2)
+                    //If toggle is set to on, sync the follower color with the master's color
+                    if (toggleSyncFollowerColor.IsOn)
                     {
-                        master.color = FAST_COLOR;
+                        follower.color = master.color;
                     }
-                    else if(speed > max_speed/3)
-                    {
-                        master.color = MEDIUM_COLOR;
-                    }
-                    else if(speed > 0)
-                    {
-                        master.color = SLOW_COLOR;
-                    }
-                    else
-                    {
-                        master.color = STOPPED_COLOR;
-                    }
-
                 }
+            }
         }
 
         private void sliderMaxSpeed_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
@@ -362,7 +368,7 @@ namespace Sphero_Squared
 
         private void sliderCalibrate_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            if(follower != null && follower.isConnected)
+            if (follower != null && follower.isConnected)
             {
                 follower.roll(Convert.ToInt16(sliderCalibrate.Value), 0, true);
 
@@ -373,7 +379,7 @@ namespace Sphero_Squared
         }
 
         private void sliderCalibrate_PointerEntered(object sender, PointerRoutedEventArgs e)
-        { 
+        {
             tc.TrackTrace("Calibration slider pressed, turn on back LED");
             if (follower != null && follower.isConnected)
             {
@@ -438,6 +444,33 @@ namespace Sphero_Squared
             if (turnOffStabilization)
             {
                 master.setStabilization(false);
+            }
+        }
+
+        private void toggleSyncFollowerColor_Toggled(object sender, RoutedEventArgs e)
+        {
+            //If toggle is on, hide color picker. Otherwise, show color picker and set color
+            if(toggleSyncFollowerColor.IsOn)
+            {
+                panelFollowerColor.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                panelFollowerColor.Visibility = Visibility.Visible;
+                
+                if(follower != null && follower.isConnected)
+                {
+                    follower.color = Color.FromArgb(255, (byte)sliderFollowerColor_Red.Value, (byte)sliderFollowerColor_Green.Value, (byte)sliderFollowerColor_Blue.Value);
+                }
+            }
+        }
+
+        private void sliderFollowerColor_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            //If follower exists, follower is connected, and the toggle is off, set color
+            if(follower != null && follower.isConnected &&!toggleSyncFollowerColor.IsOn)
+            {
+                follower.color = Color.FromArgb(255, (byte)sliderFollowerColor_Red.Value, (byte)sliderFollowerColor_Green.Value, (byte)sliderFollowerColor_Blue.Value);
             }
         }
     }
